@@ -73,6 +73,7 @@
   body,
   .p {
     @apply font-primary text-sm md:text-base;
+    @apply bg-black text-white;
   }
   /* #endregion  /**======== Typography =========== */
 

@@ -1,0 +1,301 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model mintedMoments {
+  id                Int     @id @default(autoincrement())
+  serialNnumber     Int?    @map("serial_number")
+  flowId            Int?    @unique @map("flow_id")
+  ownerId           String? @map("owner_id")
+  ownerUsername     String? @map("owner_username")
+  ownerFlowAddress  String? @map("owner_flow_address")
+  momentId          String? @unique @map("moment_id")
+  packListingId     String? @map("pack_listing_id")
+  setExternalId     String? @map("set_external_id")
+  playExternalId    String? @map("play_external_id")
+  editionExternalId String? @map("edition_external_id")
+
+  @@index([editionExternalId], map: "minted_moments_edition_external_id_key")
+  @@map("minted_moments")
+}
+
+model nbaGame {
+  id                Int        @default(autoincrement())
+  gameId            String     @id @unique @map("game_id")
+  gameStatus        Int?       @map("game_status")
+  gameStatusText    String?    @map("game_status_text")
+  period            Int?
+  gameClock         String?    @map("game_clock")
+  homeTeamId        Int?       @map("home_team_id")
+  awayTeamId        Int?       @map("away_team_id")
+  gameTimeUtc       DateTime?  @map("game_time_utc") @db.Timestamptz(6)
+  gameEt            DateTime?  @map("game_et") @db.Timestamptz(6)
+  gameDate          DateTime?  @map("game_date") @db.Date
+  homeTeamPlusMinus Int?       @default(0) @map("home_team_plus_minus")
+  awayTeamPlusMinus Int?       @default(0) @map("away_team_plus_minus")
+  homeTeamScore     Int?       @default(0) @map("home_team_score")
+  awayTeamScore     Int?       @default(0) @map("away_team_score")
+  awayTeam          nbaTeam?   @relation("nba_games_away_team_idTonba_teams", fields: [awayTeamId], references: [teamId], onDelete: NoAction, onUpdate: NoAction)
+  homeTeam          nbaTeam?   @relation("nba_games_home_team_idTonba_teams", fields: [homeTeamId], references: [teamId], onDelete: NoAction, onUpdate: NoAction)
+  nbaStats          nbaStats[]
+  seriesGameNumber  String?    @map("series_game_number")
+  seriesText        String?    @map("series_text")
+  isWnba            Boolean    @map("is_wnba")
+
+  @@map("nba_games")
+}
+
+model nbaInjury {
+  id         Int       @id @default(autoincrement())
+  name       String?
+  status     String?
+  personId   Int       @unique @map("person_id")
+  certainty  String?
+  nbaPlayers nbaPlayer @relation(fields: [personId], references: [personId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("nba_injuries")
+}
+
+model nbaPlayer {
+  id                    Int                    @default(autoincrement())
+  name                  String?
+  personId              Int                    @id @unique @map("person_id")
+  teamId                Int?                   @map("team_id")
+  isActive              Boolean?               @default(true) @map("is_active")
+  firstName             String?                @map("first_name")
+  lastName              String?                @map("last_name")
+  nbaTeam               nbaTeam?               @relation(fields: [teamId], references: [teamId], onDelete: NoAction, onUpdate: NoAction)
+  editions              edition[]              @relation("editionsTonba_players")
+  nbaInjury             nbaInjury?
+  nbaStats              nbaStats[]
+  nbaStatsSeasonAverage nbaStatsSeasonAverage?
+  nbaStats10D           NbaStats10D[]
+  isWnba                Boolean                @map("is_wnba")
+
+  @@map("nba_players")
+}
+
+model nbaStats {
+  id                      Int       @id @default(autoincrement())
+  personId                Int       @map("person_id")
+  starter                 String?
+  oncourt                 String?
+  played                  String?
+  assists                 Float?
+  blocks                  Float?
+  blocksReceived          Float?    @map("blocks_received")
+  fieldGoalsAttempted     Float?    @map("field_goals_attempted")
+  fieldGoalsMade          Float?    @map("field_goals_made")
+  fieldGoalsPercentage    Float?    @map("field_goals_percentage")
+  foulsOffensive          Float?    @map("fouls_offensive")
+  foulsDrawn              Float?    @map("fouls_drawn")
+  foulsPersonal           Float?    @map("fouls_personal")
+  foulsTechnical          Float?    @map("fouls_technical")
+  freeThrowsAttempted     Float?    @map("free_throws_attempted")
+  freeThrowsMade          Float?    @map("free_throws_made")
+  freeThrowsPercentage    Float?    @map("free_throws_percentage")
+  minus                   Float?
+  minutes                 String?
+  minutesCalculated       String?   @map("minutes_calculated")
+  secondsPlayed           Float?    @map("seconds_played")
+  teamPlusMinus           Float?    @map("team_plus_minus")
+  type                    String?
+  plus                    Float?
+  plusMinusPoints         Float?    @map("plus_minus_points")
+  points                  Float?
+  pointsFastBreak         Float?    @map("points_fast_break")
+  pointsInThePaint        Float?    @map("points_in_the_paint")
+  pointsSecondChance      Float?    @map("points_second_chance")
+  reboundsDefensive       Float?    @map("rebounds_defensive")
+  reboundsOffensive       Float?    @map("rebounds_offensive")
+  reboundsTotal           Float?    @map("rebounds_total")
+  steals                  Float?
+  threePointersAttempted  Float?    @map("three_pointers_attempted")
+  threePointersMade       Float?    @map("three_pointers_made")
+  threePointersPercentage Float?    @map("three_pointers_percentage")
+  turnovers               Float?
+  twoPointersAttempted    Float?    @map("two_pointers_attempted")
+  twoPointersMade         Float?    @map("two_pointers_made")
+  twoPointersPercentage   Float?    @map("two_pointers_percentage")
+  calculatedStat          Float?    @map("calculated_stat")
+  calculatedStat1         Float?    @map("calculated_stat1")
+  calculatedStat2         Float?    @map("calculated_stat2")
+  calculatedStat3         Float?    @map("calculated_stat3")
+  calculatedStat4         Float?    @map("calculated_stat4")
+  calculatedStat5         Float?    @map("calculated_stat5")
+  calculatedLabel         String?   @map("calculated_label")
+  teamId                  Int       @map("team_id")
+  gameDate                DateTime  @map("game_date") @db.Date
+  gameId                  String    @map("game_id")
+  isWnba                  Boolean   @map("is_wnba")
+  didTeamWin              Boolean   @map("did_team_win")
+  assistsPlusRebounds     Float?    @map("assists_plus_rebounds")
+  nbaGame                 nbaGame   @relation(fields: [gameId], references: [gameId], onDelete: NoAction, onUpdate: NoAction)
+  nbaPlayer               nbaPlayer @relation(fields: [personId], references: [personId], onDelete: NoAction, onUpdate: NoAction)
+  nbaTeam                 nbaTeam   @relation(fields: [teamId], references: [teamId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([personId, gameId], map: "idx_nba_stats_person_id_game_id")
+  @@map("nba_stats")
+}
+
+model nbaStatsSeasonAverage {
+  personId                Int        @unique @map("person_id")
+  secondsPlayed           Float?     @map("seconds_played")
+  fieldGoalsMade          Float?     @map("field_goals_made")
+  fieldGoalsAttempted     Float?     @map("field_goals_attempted")
+  fieldGoalsPercentage    Float?     @map("field_goals_percentage")
+  threePointersMade       Float?     @map("three_pointers_made")
+  threePointersAttempted  Float?     @map("three_pointers_attempted")
+  threePointersPercentage Float?     @map("three_pointers_percentage")
+  freeThrowsMade          Float?     @map("free_throws_made")
+  freeThrowsAttempted     Float?     @map("free_throws_attempted")
+  freeThrowsPercentage    Float?     @map("free_throws_percentage")
+  reboundsOffensive       Float?     @map("rebounds_offensive")
+  reboundsDefensive       Float?     @map("rebounds_defensive")
+  reboundsTotal           Float?     @map("rebounds_total")
+  assists                 Float?     @map("assists")
+  steals                  Float?     @map("steals")
+  blocks                  Float?     @map("blocks")
+  turnovers               Float?     @map("turnovers")
+  points                  Float?     @map("points")
+  plusMinusPoints         Float?     @map("plus_minus_points")
+  teamPlusMinus           Float?     @map("team_plus_minus")
+  calculatedStat          Float?     @map("calculated_stat")
+  calculatedStat1         Float?     @map("calculated_stat1")
+  calculatedStat2         Float?     @map("calculated_stat2")
+  calculatedStat3         Float?     @map("calculated_stat3")
+  calculatedStat4         Float?     @map("calculated_stat4")
+  calculatedStat5         Float?     @map("calculated_stat5")
+  nbaPlayer               nbaPlayer? @relation(fields: [personId], references: [personId])
+
+  @@map("nba_stats_season_average")
+}
+
+model nbaTeam {
+  id                                          Int         @default(autoincrement())
+  teamId                                      Int         @id @unique @map("team_id")
+  teamName                                    String?     @map("team_name")
+  teamTricode                                 String?     @map("team_tricode")
+  wins                                        Int
+  losses                                      Int
+  nba_games_nba_games_away_team_idTonba_teams nbaGame[]   @relation("nba_games_away_team_idTonba_teams")
+  nba_games_nba_games_home_team_idTonba_teams nbaGame[]   @relation("nba_games_home_team_idTonba_teams")
+  nbaPlayers                                  nbaPlayer[]
+  nbaStats                                    nbaStats[]
+  isWnba                                      Boolean     @map("is_wnba")
+
+  @@map("nba_teams")
+}
+
+model Moment {
+  id                Int      @id @default(autoincrement())
+  username          String   @map("username")
+  momentId          String   @map("moment_id")
+  editionExternalId String   @map("edition_external_id")
+  serialNumber      Int      @map("serial_number")
+  averageSalePrice  Float    @map("average_sale_price")
+  purchasePrice     Float    @map("purchase_price")
+  score             Int      @map("score")
+  scoreCalculatedAt String   @map("score_calculated_at")
+  scoreDerivedVia   String   @map("score_derived_via")
+  isLocked          Boolean  @map("is_locked")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+
+  @@map("moments")
+}
+
+model NbaStats10D {
+  personId                Int    @id @map("person_id")
+  secondsPlayed           Float? @map("seconds_played")
+  fieldGoalsMade          Float? @map("field_goals_made")
+  fieldGoalsAttempted     Float? @map("field_goals_attempted")
+  fieldGoalsPercentage    Float? @map("field_goals_percentage")
+  threePointersMade       Float? @map("three_pointers_made")
+  threePointersAttempted  Float? @map("three_pointers_attempted")
+  threePointersPercentage Float? @map("three_pointers_percentage")
+  freeThrowsMade          Float? @map("free_throws_made")
+  freeThrowsAttempted     Float? @map("free_throws_attempted")
+  freeThrowsPercentage    Float? @map("free_throws_percentage")
+  reboundsOffensive       Float? @map("rebounds_offensive")
+  reboundsDefensive       Float? @map("rebounds_defensive")
+  reboundsTotal           Float? @map("rebounds_total")
+  assists                 Float? @map("assists")
+  steals                  Float? @map("steals")
+  blocks                  Float? @map("blocks")
+  turnovers               Float? @map("turnovers")
+  points                  Float? @map("points")
+  plusMinusPoints         Float? @map("plus_minus_points")
+  teamPlusMinus           Float? @map("team_plus_minus")
+  calculatedStat          Float? @map("calculated_stat")
+
+  nbaPlayer nbaPlayer? @relation(fields: [personId], references: [personId])
+
+  @@map("nba_stats_ten_day_average")
+}
+
+model edition {
+  id                       Int            @id(map: "mn_editions_pkey") @default(autoincrement())
+  editionExternalId        String?        @unique(map: "mn_editions_edition_external_id_key") @map("edition_external_id")
+  setExternalId            String?        @map("set_external_id")
+  playExternalId           String?        @map("play_external_id")
+  playerName               String?        @map("player_name")
+  flowName                 String?        @map("flow_name")
+  flowSeriesNumber         Int?           @map("flow_series_number")
+  playCategory             String?        @map("play_category")
+  circulationCount         Int?           @map("circulation_count")
+  setVisualId              String?        @map("set_visual_id")
+  jerseyNumber             String?        @map("jersey_number")
+  currentTeam              String?        @map("current_team")
+  draftYear                Int?           @map("draft_year")
+  playerId                 Int?           @map("player_id")
+  setFlowId                Int?           @map("set_flow_id")
+  playFlowId               Int?           @map("play_flow_id")
+  stats                    Json?
+  timestamp                DateTime       @default(now()) @db.Timestamptz(6)
+  description              String?
+  assetPathPrefix          String?        @map("asset_path_prefix")
+  statsPlayerGameScores    Json?          @map("stats_player_game_scores")
+  hasAvatar                Boolean?       @default(false) @map("has_avatar")
+  tags                     String?
+  nbaPlayer                nbaPlayer?     @relation("editionsTonba_players", fields: [playerId], references: [personId], onDelete: NoAction, onUpdate: NoAction)
+  statsSnapshot            statsSnapshot?
+  isTsd                    Boolean?       @default(false) @map("is_tsd")
+  isReward                 Boolean?       @default(false) @map("is_reward")
+  isCraftingReward         Boolean?       @default(false) @map("is_crafting_reward")
+  floor                    Int?           @map("floor")
+  momentum                 Float?         @map("momentum")
+  percentChange            Float?         @map("percent_change")
+  priceChange              Float?         @map("price_change")
+  priceUpdatedAt           DateTime?      @map("price_updated_at")
+  circulationForSale       Int?           @map("circulation_for_sale")
+  circulationOwned         Int?           @map("circulation_owned")
+  circulationHiddenInPacks Int?           @map("circulation_hidden_in_packs")
+  circulationLockerRoom    Int?           @map("circulation_locker_room")
+  circulationBurned        Int?           @map("circulation_burned")
+  circulationLocked        Int?           @map("circulation_locked")
+  isRookiePremiere         Boolean?       @default(false) @map("is_rookie_premiere")
+  isRookieMint             Boolean?       @default(false) @map("is_rookie_mint")
+  isRookieYear             Boolean?       @default(false) @map("is_rookie_year")
+  isChampionshipYear       Boolean?       @default(false) @map("is_championship_year")
+  isMvpYear                Boolean?       @default(false) @map("is_mvp_year")
+  isLeaderboardReward      Boolean?       @default(false) @map("is_leaderboard_reward")
+  averageSalePrice         Float?         @map("average_sale_price")
+  aspDays                  Int?           @map("asp_days")
+  aspSales                 Int?           @map("asp_sales")
+  uniqueSellerCount        Int?           @map("unique_seller_count")
+  league                   String?        @map("league")
+  teamAtMomentId           Int?           @map("team_at_moment_id")
+  teamAtMoment             String?        @map("team_at_moment")
+  numActiveOwners          Int?           @map("num_active_owners")
+
+  @@index([playExternalId], map: "mn_editions_play_external_id_key")
+  @@index([playerName], map: "mn_editions_player_name_key")
+  @@index([setExternalId], map: "mn_editions_set_external_id_key")
+  @@map("editions")
+}
