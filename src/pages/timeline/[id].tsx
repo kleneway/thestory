@@ -286,9 +286,6 @@ const TimelinePage: React.FC<Props> = ({ galleryId }) => {
             color: #FF0E8D !important;
             box-shadow: none !important;
           }
-            .tl-attribution {
-            display: none;
-          }
           .tl-timeline h1,
           .tl-timeline h2,
           .tl-timeline h3,
